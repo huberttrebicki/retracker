@@ -25,7 +25,9 @@ export const intervalEnum = pgEnum("interval", [
 export const statusEnum = pgEnum("status", ["active", "paused", "cancelled"]);
 
 export const user = pgTable("user", {
-  id: uuid("id").primaryKey().default(sql`uuidv7()`),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuidv7()`),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
@@ -42,7 +44,9 @@ export const user = pgTable("user", {
 export const session = pgTable(
   "session",
   {
-    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -64,7 +68,9 @@ export const session = pgTable(
 export const account = pgTable(
   "account",
   {
-    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: uuid("user_id")
@@ -95,7 +101,9 @@ export const account = pgTable(
 export const verification = pgTable(
   "verification",
   {
-    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -111,7 +119,9 @@ export const verification = pgTable(
 );
 
 export const providerCategories = pgTable("provider_categories", {
-  id: uuid("id").primaryKey().default(sql`uuidv7()`),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuidv7()`),
   name: text("name").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -123,7 +133,9 @@ export const providerCategories = pgTable("provider_categories", {
 });
 
 export const currencies = pgTable("currencies", {
-  id: uuid("id").primaryKey().default(sql`uuidv7()`),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuidv7()`),
   name: text("name").notNull(),
   code: char("code", { length: 3 }).unique().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -138,13 +150,14 @@ export const currencies = pgTable("currencies", {
 export const providers = pgTable(
   "providers",
   {
-    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
     providerCategoryId: uuid("provider_category_id")
       .notNull()
       .references(() => providerCategories.id),
     userId: uuid("user_id").references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    logo: text("logo"),
     website: text("website"),
     mail: text("mail"),
     phone: text("phone"),
@@ -165,7 +178,9 @@ export const providers = pgTable(
 export const subscriptions = pgTable(
   "subscriptions",
   {
-    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
     userId: uuid("user_id")
       .references(() => user.id, { onDelete: "cascade" })
       .notNull(),
@@ -176,6 +191,7 @@ export const subscriptions = pgTable(
       .references(() => currencies.id)
       .notNull(),
     name: text("name").notNull(),
+    description: text("description"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
     intervalCount: integer("interval_count").notNull(),
     interval: intervalEnum().notNull(),

@@ -1,6 +1,6 @@
 {
-  "id": "f4a2027a-def1-4180-8f39-37ac8f650669",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "5ff316de-1d38-4c5c-92a5-49e657c91066",
+  "prevId": "f4a2027a-def1-4180-8f39-37ac8f650669",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -250,12 +250,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "logo": {
-          "name": "logo",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "website": {
           "name": "website",

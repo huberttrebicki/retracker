@@ -63,6 +63,7 @@ CREATE TABLE "subscriptions" (
 	"provider_id" uuid NOT NULL,
 	"currency_id" uuid NOT NULL,
 	"name" text NOT NULL,
+	"description" text,
 	"started_at" timestamp with time zone NOT NULL,
 	"interval_count" integer NOT NULL,
 	"interval" interval NOT NULL,
