@@ -37,6 +37,25 @@ const providersApp = new Hono<AppEnv>()
       .where(or(isNull(providers.userId), eq(providers.userId, user.id)));
     return c.json(providersQuery);
   })
+  .get("/user-providers", async (c) => {
+    const user = c.get("user")!;
+    const providersQuery = await db
+      .select({
+        id: providers.id,
+        category: providerCategories.name,
+        name: providers.name,
+        website: providers.website,
+        mail: providers.mail,
+        phone: providers.phone,
+      })
+      .from(providers)
+      .innerJoin(
+        providerCategories,
+        eq(providerCategories.id, providers.providerCategoryId),
+      )
+      .where(eq(providers.userId, user.id));
+    return c.json(providersQuery);
+  })
   .post("/", zValidator("json", providerSchema), async (c) => {
     const user = c.get("user")!;
     const { name, providerCategoryId, website, mail, phone } =

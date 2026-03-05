@@ -1,12 +1,15 @@
 {
   "name": "subscription-manager",
   "module": "index.ts",
-  "type": "module",
-  "private": true,
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
-  }
+  },
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ]
 }
