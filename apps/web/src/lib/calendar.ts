@@ -1,4 +1,4 @@
-import type { MockSubscription } from "@/data/mock"
+import type { Subscription } from "@/lib/api"
 
 export function formatDateKey(date: Date): string {
   const y = date.getFullYear()
@@ -31,10 +31,10 @@ function daysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate()
 }
 
-export function isPaymentOnDate(sub: MockSubscription, date: Date): boolean {
-  const startDate = sub.startedAt
+export function isPaymentOnDate(sub: Subscription, date: Date): boolean {
+  const startDate = new Date(sub.startedAt)
   if (date < startDate) return false
-  if (sub.endsAt && date > sub.endsAt) return false
+  if (sub.endsAt && date > new Date(sub.endsAt)) return false
   if (sub.status === "cancelled" && !sub.endsAt) return false
 
   const dy = date.getFullYear()
@@ -75,12 +75,12 @@ export function isPaymentOnDate(sub: MockSubscription, date: Date): boolean {
 }
 
 export function getSubscriptionsByDay(
-  subscriptions: MockSubscription[],
+  subscriptions: Subscription[],
   year: number,
   month: number,
-): Map<string, MockSubscription[]> {
+): Map<string, Subscription[]> {
   const days = getCalendarDays(year, month)
-  const map = new Map<string, MockSubscription[]>()
+  const map = new Map<string, Subscription[]>()
 
   for (const day of days) {
     const key = formatDateKey(day)

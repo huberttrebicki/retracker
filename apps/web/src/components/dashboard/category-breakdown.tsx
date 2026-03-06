@@ -1,27 +1,32 @@
+import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { mockSubscriptions } from "@/data/mock"
 import { formatCurrency } from "@/lib/calendar"
 import { useCurrency } from "@/lib/currency-context"
+import type { Subscription } from "@/lib/api"
 
-const active = mockSubscriptions.filter((s) => s.status === "active")
-
-const categories = Object.entries(
-  active.reduce<Record<string, { total: number; count: number }>>(
-    (acc, sub) => {
-      const cat = sub.category
-      if (!acc[cat]) acc[cat] = { total: 0, count: 0 }
-      acc[cat].total += sub.price
-      acc[cat].count += 1
-      return acc
-    },
-    {},
-  ),
-).sort((a, b) => b[1].total - a[1].total)
-
-const maxTotal = categories[0]?.[1].total ?? 0
-
-export function CategoryBreakdown() {
+export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscription[] }) {
   const { currency } = useCurrency()
+
+  const categories = useMemo(() => {
+    const active = subscriptions.filter((s) => s.status === "active")
+
+    const entries = Object.entries(
+      active.reduce<Record<string, { total: number; count: number }>>(
+        (acc, sub) => {
+          const cat = sub.provider.category
+          if (!acc[cat]) acc[cat] = { total: 0, count: 0 }
+          acc[cat].total += sub.price
+          acc[cat].count += 1
+          return acc
+        },
+        {},
+      ),
+    ).sort((a, b) => b[1].total - a[1].total)
+
+    return entries
+  }, [subscriptions])
+
+  const maxTotal = categories[0]?.[1].total ?? 0
 
   return (
     <Card>

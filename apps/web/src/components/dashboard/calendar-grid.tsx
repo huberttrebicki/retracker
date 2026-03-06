@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import { mockSubscriptions } from "@/data/mock"
+import type { Subscription } from "@/lib/api"
 import {
   formatDateKey,
   getCalendarDays,
@@ -27,7 +27,7 @@ const monthFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 })
 
-export function CalendarGrid() {
+export function CalendarGrid({ subscriptions }: { subscriptions: Subscription[] }) {
   const [currentDate, setCurrentDate] = React.useState(() => new Date())
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null)
   const { currency } = useCurrency()
@@ -41,8 +41,8 @@ export function CalendarGrid() {
   )
 
   const subscriptionsByDay = React.useMemo(
-    () => getSubscriptionsByDay(mockSubscriptions, year, month),
-    [year, month],
+    () => getSubscriptionsByDay(subscriptions, year, month),
+    [subscriptions, year, month],
   )
 
   const monthlyTotal = React.useMemo(() => {

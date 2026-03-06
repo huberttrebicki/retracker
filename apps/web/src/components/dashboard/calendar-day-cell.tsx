@@ -1,4 +1,4 @@
-import type { MockSubscription } from "@/data/mock"
+import type { Subscription } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/calendar"
 import { useCurrency } from "@/lib/currency-context"
@@ -29,7 +29,7 @@ export function CalendarDayCell({
   onClick,
 }: {
   date: Date
-  subscriptions: MockSubscription[]
+  subscriptions: Subscription[]
   isCurrentMonth: boolean
   isToday: boolean
   onClick: () => void
@@ -68,8 +68,8 @@ export function CalendarDayCell({
           <AvatarGroup className="mt-auto">
             {visible.map((sub) => (
               <Avatar key={sub.id} size="sm">
-                <AvatarFallback className={getProviderColor(sub.providerName)}>
-                  {sub.providerName[0]}
+                <AvatarFallback className={getProviderColor(sub.provider.name)}>
+                  {sub.provider.name[0]}
                 </AvatarFallback>
               </Avatar>
             ))}

@@ -1,4 +1,4 @@
-import type { MockSubscription } from "@/data/mock"
+import type { Subscription } from "@/lib/api"
 import { formatCurrency } from "@/lib/calendar"
 import { useCurrency } from "@/lib/currency-context"
 import {
@@ -34,7 +34,7 @@ export function DayDetailDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   date: Date | null
-  subscriptions: MockSubscription[]
+  subscriptions: Subscription[]
 }) {
   const { currency } = useCurrency()
   const total = subscriptions.reduce((sum, s) => sum + s.price, 0)
@@ -57,24 +57,19 @@ export function DayDetailDialog({
               {i > 0 && <Separator />}
               <div className="flex items-center gap-3 py-3">
                 <Avatar>
-                  <AvatarFallback>{sub.providerName[0]}</AvatarFallback>
+                  <AvatarFallback>{sub.provider.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{sub.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {sub.providerName}
+                    {sub.provider.name}
                   </p>
-                  {sub.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {sub.description}
-                    </p>
-                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-sm font-medium">
                     {formatCurrency(sub.price, currency)}
                   </span>
-                  <Badge variant={statusVariant[sub.status]}>{sub.status}</Badge>
+                  <Badge variant={statusVariant[sub.status as keyof typeof statusVariant] ?? "default"}>{sub.status}</Badge>
                 </div>
               </div>
             </div>

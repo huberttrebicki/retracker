@@ -6,6 +6,7 @@ import providersApp from "./routes/providers";
 import subscriptionsApp from "./routes/subscriptions";
 
 const app = new Hono<AppEnv>()
+  .basePath("/api")
   .use(
     "*",
     cors({

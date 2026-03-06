@@ -15,7 +15,7 @@ const authApp = new Hono<AppEnv>()
     c.set("session", session.session);
     return next();
   })
-  .on(["POST", "GET"], "/api/auth/*", (c) => {
+  .on(["POST", "GET"], "/auth/*", (c) => {
     return auth.handler(c.req.raw);
   });
 
