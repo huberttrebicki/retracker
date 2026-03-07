@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Link, useMatchRoute } from "@tanstack/react-router"
 import {
   CalendarIcon,
   CreditCardIcon,
@@ -33,22 +34,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { mockSubscriptions } from "@/data/mock"
-import { formatCurrency, isPaymentOnDate } from "@/lib/calendar"
 import { useCurrency, currencies } from "@/lib/currency-context"
 
 const navItems = [
-  { title: "Dashboard", icon: CalendarIcon, active: true },
-  { title: "Subscriptions", icon: CreditCardIcon, active: false },
-  { title: "Providers", icon: BuildingIcon, active: false },
-  { title: "Settings", icon: SettingsIcon, active: false },
+  { title: "Dashboard", icon: CalendarIcon, url: "/dashboard" },
+  { title: "Subscriptions", icon: CreditCardIcon, url: "/subscriptions" },
+  { title: "Providers", icon: BuildingIcon, url: "/providers" },
+  { title: "Settings", icon: SettingsIcon, url: "/settings" },
 ]
-
-const active = mockSubscriptions.filter((s) => s.status === "active")
-const today = new Date()
-const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
-const todayPayments = active.filter((s) => isPaymentOnDate(s, today))
-const tomorrowPayments = active.filter((s) => isPaymentOnDate(s, tomorrow))
 
 type Theme = "light" | "dark" | "system"
 
@@ -76,6 +69,7 @@ const themes = [
 export function AppSidebar() {
   const [theme, setTheme] = React.useState<Theme>(getTheme)
   const { currency, setCurrency } = useCurrency()
+  const matchRoute = useMatchRoute()
 
   function handleTheme(t: Theme) {
     setTheme(t)
@@ -104,7 +98,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton isActive={item.active}>
+                  <SidebarMenuButton
+                    isActive={!!matchRoute({ to: item.url })}
+                    render={<Link to={item.url} />}
+                  >
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -114,55 +111,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Today</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {todayPayments.length === 0 ? (
-              <p className="px-2 py-1 text-xs text-muted-foreground">
-                No payments today
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2 px-2 py-1">
-                {todayPayments.map((sub) => (
-                  <div key={sub.id} className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarFallback>{sub.providerName[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 truncate text-sm">{sub.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatCurrency(sub.price, currency)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Tomorrow</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {tomorrowPayments.length === 0 ? (
-              <p className="px-2 py-1 text-xs text-muted-foreground">
-                No payments tomorrow
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2 px-2 py-1">
-                {tomorrowPayments.map((sub) => (
-                  <div key={sub.id} className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarFallback>{sub.providerName[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="flex-1 truncate text-sm">{sub.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatCurrency(sub.price, currency)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

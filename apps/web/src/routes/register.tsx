@@ -48,7 +48,7 @@ function RegisterPage() {
         return
       }
 
-      navigate({ to: "/" })
+      navigate({ to: "/dashboard" })
     },
   })
 

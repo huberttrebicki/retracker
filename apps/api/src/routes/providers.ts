@@ -42,6 +42,7 @@ const providersApp = new Hono<AppEnv>()
     const providersQuery = await db
       .select({
         id: providers.id,
+        providerCategoryId: providers.providerCategoryId,
         category: providerCategories.name,
         name: providers.name,
         website: providers.website,
@@ -55,6 +56,15 @@ const providersApp = new Hono<AppEnv>()
       )
       .where(eq(providers.userId, user.id));
     return c.json(providersQuery);
+  })
+  .get("/categories", async (c) => {
+    const categories = await db
+      .select({
+        id: providerCategories.id,
+        name: providerCategories.name,
+      })
+      .from(providerCategories);
+    return c.json(categories);
   })
   .post("/", zValidator("json", providerSchema), async (c) => {
     const user = c.get("user")!;
@@ -83,47 +93,45 @@ const providersApp = new Hono<AppEnv>()
       }),
     ),
     async (c) => {
-      const param = c.req.valid("param");
-      const id = param.id;
+      const { id } = c.req.valid("param");
       const values = c.req.valid("json");
       const user = c.get("user")!;
-      const [creatorId] = await db
-        .select({ id: providers.id })
+      const [provider] = await db
+        .select({ userId: providers.userId })
         .from(providers)
         .where(eq(providers.id, id))
         .limit(1);
 
-      if (!creatorId)
+      if (!provider)
         return c.json("provider with given id does not exist", 404);
 
-      if (creatorId.id !== user.id)
+      if (provider.userId !== user.id)
         return c.json("You have no permission to access this content", 403);
 
       await db.update(providers).set(values).where(eq(providers.id, id));
-      c.status(204);
+      return c.body(null, 204);
     },
   )
   .delete(
     "/:id",
     zValidator("param", z.object({ id: z.uuidv7() })),
     async (c) => {
-      const param = c.req.valid("param");
-      const id = param.id;
+      const { id } = c.req.valid("param");
       const user = c.get("user")!;
-      const [creatorId] = await db
-        .select({ id: providers.id })
+      const [provider] = await db
+        .select({ userId: providers.userId })
         .from(providers)
         .where(eq(providers.id, id))
         .limit(1);
 
-      if (!creatorId)
+      if (!provider)
         return c.json("provider with given id does not exist", 404);
 
-      if (creatorId.id !== user.id)
+      if (provider.userId !== user.id)
         return c.json("You have no permission to access this content", 403);
 
       await db.delete(providers).where(eq(providers.id, id));
-      c.status(204);
+      return c.body(null, 204);
     },
   );
 

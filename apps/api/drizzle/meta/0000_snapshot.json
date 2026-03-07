@@ -1,5 +1,5 @@
 {
-  "id": "f4a2027a-def1-4180-8f39-37ac8f650669",
+  "id": "0795080b-c448-4fae-aba0-7662c7de3728",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -250,12 +250,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "logo": {
-          "name": "logo",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "website": {
           "name": "website",
@@ -511,9 +505,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "interval": {
-          "name": "interval",
-          "type": "interval",
+        "billing_interval": {
+          "name": "billing_interval",
+          "type": "billing_interval",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -794,8 +788,8 @@
     }
   },
   "enums": {
-    "public.interval": {
-      "name": "interval",
+    "public.billing_interval": {
+      "name": "billing_interval",
       "schema": "public",
       "values": [
         "day",

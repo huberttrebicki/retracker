@@ -15,7 +15,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const intervalEnum = pgEnum("interval", [
+export const intervalEnum = pgEnum("billing_interval", [
   "day",
   "week",
   "month",
@@ -194,7 +194,7 @@ export const subscriptions = pgTable(
     description: text("description"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
     intervalCount: integer("interval_count").notNull(),
-    interval: intervalEnum().notNull(),
+    interval: intervalEnum("billing_interval").notNull(),
     price: numeric("price").notNull(),
     metadata: jsonb("metadata").notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true }),

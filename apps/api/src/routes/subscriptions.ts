@@ -7,6 +7,19 @@ import { requireAuth } from "../middleware/auth";
 import { currencies, providerCategories, providers, subscriptions } from "../database/schema";
 import { eq, sql } from "drizzle-orm";
 
+
+const subscriptionSchema = z.object({
+  name: z.string().nonempty(),
+  providerId: z.uuidv7(),
+  currencyId: z.uuidv7(),
+  description: z.string().nullable(),
+  startedAt: z.coerce.date(),
+  intervalCount: z.number().positive(),
+  interval: z.enum(["day", "week", "month", "year"]),
+  price: z.number().positive(),
+  metadata: z.json().default({})
+})
+
 const subscriptionsApp = new Hono<AppEnv>()
   .use("*", requireAuth)
   .get("/", async (c) => {
@@ -15,6 +28,7 @@ const subscriptionsApp = new Hono<AppEnv>()
       .select({
         id: subscriptions.id,
         name: subscriptions.name,
+        description: subscriptions.description,
         provider: sql`json_build_object('id', ${providers.id}, 'name', ${providers.name}, 'website', ${providers.website}, 'category', ${providerCategories.name})`,
         currency: currencies.code,
         startedAt: subscriptions.startedAt,
@@ -32,7 +46,7 @@ const subscriptionsApp = new Hono<AppEnv>()
     return c.json(subs);
   })
   .get("/:id", zValidator("param", z.object({ id: z.uuidv7() })), async (c) => {
-    const param = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const user = c.get("user")!;
     const [sub] = await db.select({
       id: subscriptions.id,
@@ -53,10 +67,10 @@ const subscriptionsApp = new Hono<AppEnv>()
       innerJoin(providers, eq(subscriptions.providerId, providers.id))
       .innerJoin(providerCategories, eq(providers.providerCategoryId, providerCategories.id))
       .innerJoin(currencies, eq(subscriptions.currencyId, currencies.id))
-      .where(eq(subscriptions.id, param.id)).limit(1);
+      .where(eq(subscriptions.id, id)).limit(1);
 
     if (!sub) {
-      return c.json(`Subscription with id: ${param.id} does not exist`);
+      return c.json(`Subscription with id: ${id} does not exist`);
     }
 
     if (sub.userId !== user.id) {
@@ -65,15 +79,59 @@ const subscriptionsApp = new Hono<AppEnv>()
 
     return c.json(sub);
   })
-  .delete("/:id", zValidator("param", z.object({ id: z.uuidv7() })), async (c) => {
-    const param = c.req.valid("param");
+  .post("/", zValidator("json", subscriptionSchema), async (c) => {
+    const body = c.req.valid("json");
     const user = c.get("user")!;
-    const [sub] = await db.select({ userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.id, param.id)).limit(1);
+    const id = Bun.randomUUIDv7();
+
+    await db.insert(subscriptions).values({
+      id,
+      userId: user.id,
+      name: body.name,
+      providerId: body.providerId,
+      currencyId: body.currencyId,
+      description: body.description,
+      startedAt: body.startedAt,
+      intervalCount: body.intervalCount,
+      interval: body.interval,
+      price: String(body.price),
+      metadata: body.metadata,
+      status: "active",
+    });
+
+    return c.json({ id }, 201);
+  })
+  .patch("/:id", zValidator("param", z.object({ id: z.uuidv7() })), zValidator("json", subscriptionSchema.partial()), async (c) => {
+    const { id } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const user = c.get("user")!;
+
+    const [sub] = await db.select({ userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.id, id)).limit(1);
+
+    if (!sub) {
+      return c.json(`Subscription with id: ${id} does not exist`, 404);
+    }
+
     if (sub.userId !== user.id) {
       return c.json("Content does not belong to the user", 403);
     }
-    await db.delete(subscriptions).where(eq(subscriptions.id, param.id));
-    c.status(204);
+
+    await db.update(subscriptions).set({
+      ...body,
+      price: body.price !== undefined ? String(body.price) : undefined,
+    }).where(eq(subscriptions.id, id));
+
+    return c.body(null, 204);
+  })
+  .delete("/:id", zValidator("param", z.object({ id: z.uuidv7() })), async (c) => {
+    const { id } = c.req.valid("param");
+    const user = c.get("user")!;
+    const [sub] = await db.select({ userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.id, id)).limit(1);
+    if (sub.userId !== user.id) {
+      return c.json("Content does not belong to the user", 403);
+    }
+    await db.delete(subscriptions).where(eq(subscriptions.id, id));
+    return c.body(null, 204);
   });
 
 

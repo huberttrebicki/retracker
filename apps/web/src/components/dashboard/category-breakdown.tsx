@@ -34,6 +34,9 @@ export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscripti
         <CardTitle>Spending by Category</CardTitle>
       </CardHeader>
       <CardContent>
+        {categories.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No active subscriptions</p>
+        ) : (
         <div className="flex flex-col gap-3">
           {categories.map(([name, { total, count }]) => (
             <div key={name} className="flex flex-col gap-1.5">
@@ -55,6 +58,7 @@ export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscripti
             </div>
           ))}
         </div>
+        )}
       </CardContent>
     </Card>
   )

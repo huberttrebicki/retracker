@@ -1,4 +1,4 @@
-CREATE TYPE "public"."interval" AS ENUM('day', 'week', 'month', 'year');--> statement-breakpoint
+CREATE TYPE "public"."billing_interval" AS ENUM('day', 'week', 'month', 'year');--> statement-breakpoint
 CREATE TYPE "public"."status" AS ENUM('active', 'paused', 'cancelled');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
@@ -37,7 +37,6 @@ CREATE TABLE "providers" (
 	"provider_category_id" uuid NOT NULL,
 	"user_id" uuid,
 	"name" text NOT NULL,
-	"logo" text,
 	"website" text,
 	"mail" text,
 	"phone" text,
@@ -66,7 +65,7 @@ CREATE TABLE "subscriptions" (
 	"description" text,
 	"started_at" timestamp with time zone NOT NULL,
 	"interval_count" integer NOT NULL,
-	"interval" interval NOT NULL,
+	"billing_interval" "billing_interval" NOT NULL,
 	"price" numeric NOT NULL,
 	"metadata" jsonb NOT NULL,
 	"ends_at" timestamp with time zone,
