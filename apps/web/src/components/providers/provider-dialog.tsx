@@ -16,12 +16,13 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox"
 
 interface ProviderDialogProps {
   open: boolean
@@ -39,6 +40,8 @@ export function ProviderDialog({
   const queryClient = useQueryClient()
   const [error, setError] = useState("")
   const isEdit = !!provider
+
+  const categoryItems = categories.map((c) => ({ label: c.name, value: c.id }))
 
   const form = useForm({
     defaultValues: {
@@ -133,23 +136,24 @@ export function ProviderDialog({
             {(field) => (
               <Field>
                 <FieldLabel>Category</FieldLabel>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(val) => field.handleChange(val as string)}
+                <Combobox
+                  items={categoryItems}
+                  value={categoryItems.find((c) => c.value === field.state.value) ?? null}
+                  onValueChange={(val: any) => field.handleChange(val?.value ?? "")}
+                  itemToStringValue={(item: any) => item?.label ?? ""}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a category">
-                      {categories.find((c) => c.id === field.state.value)?.name}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <ComboboxInput placeholder="Search categories..." />
+                  <ComboboxContent>
+                    <ComboboxEmpty>No categories found</ComboboxEmpty>
+                    <ComboboxList>
+                      {(item: any) => (
+                        <ComboboxItem key={item.value} value={item}>
+                          {item.label}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
                 {field.state.meta.errors.length > 0 && (
                   <FieldError>{field.state.meta.errors[0]}</FieldError>
                 )}

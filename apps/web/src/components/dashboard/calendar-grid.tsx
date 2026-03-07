@@ -30,7 +30,7 @@ const monthFormatter = new Intl.DateTimeFormat("en-US", {
 export function CalendarGrid({ subscriptions }: { subscriptions: Subscription[] }) {
   const [currentDate, setCurrentDate] = React.useState(() => new Date())
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null)
-  const { currency } = useCurrency()
+  const { currency, convert } = useCurrency()
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -50,11 +50,11 @@ export function CalendarGrid({ subscriptions }: { subscriptions: Subscription[] 
     for (const [key, subs] of subscriptionsByDay) {
       const d = new Date(key)
       if (d.getMonth() === month) {
-        total += subs.reduce((sum, s) => sum + s.price, 0)
+        total += subs.reduce((sum, s) => sum + convert(Number(s.price), s.currency), 0)
       }
     }
     return formatCurrency(total, currency)
-  }, [subscriptionsByDay, month, currency])
+  }, [subscriptionsByDay, month, currency, convert])
 
   const rows = calendarDays.length / 7
   const selectedDaySubs = selectedDate

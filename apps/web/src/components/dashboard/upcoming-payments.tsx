@@ -1,6 +1,5 @@
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { formatCurrency, isPaymentOnDate, formatDateKey } from "@/lib/calendar"
 import { useCurrency } from "@/lib/currency-context"
 import type { Subscription } from "@/lib/api"
@@ -11,7 +10,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 })
 
 export function UpcomingPayments({ subscriptions }: { subscriptions: Subscription[] }) {
-  const { currency } = useCurrency()
+  const { currency, convert } = useCurrency()
   const today = formatDateKey(new Date())
 
   const upcoming = useMemo(() => {
@@ -41,9 +40,13 @@ export function UpcomingPayments({ subscriptions }: { subscriptions: Subscriptio
             const isToday = key === today
             return (
               <div key={`${sub.id}-${key}`} className="flex items-center gap-3">
-                <Avatar size="sm">
-                  <AvatarFallback>{sub.provider.name[0]}</AvatarFallback>
-                </Avatar>
+                {sub.provider.logo ? (
+                  <img src={sub.provider.logo} alt={sub.provider.name} className="size-8 rounded object-contain" />
+                ) : (
+                  <div className="flex size-8 items-center justify-center rounded bg-purple-100 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                    {sub.provider.name[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{sub.name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -51,7 +54,7 @@ export function UpcomingPayments({ subscriptions }: { subscriptions: Subscriptio
                   </p>
                 </div>
                 <span className="text-sm font-medium">
-                  {formatCurrency(sub.price, currency)}
+                  {formatCurrency(convert(Number(sub.price), sub.currency), currency)}
                 </span>
               </div>
             )

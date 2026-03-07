@@ -32,15 +32,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { useCurrency, currencies } from "@/lib/currency-context"
+import { useCurrency } from "@/lib/currency-context"
 
 const navItems = [
   { title: "Dashboard", icon: CalendarIcon, url: "/dashboard" },
   { title: "Subscriptions", icon: CreditCardIcon, url: "/subscriptions" },
   { title: "Providers", icon: BuildingIcon, url: "/providers" },
-  { title: "Settings", icon: SettingsIcon, url: "/settings" },
 ]
 
 type Theme = "light" | "dark" | "system"
@@ -68,7 +74,7 @@ const themes = [
 
 export function AppSidebar() {
   const [theme, setTheme] = React.useState<Theme>(getTheme)
-  const { currency, setCurrency } = useCurrency()
+  const { currency, setCurrency, currencies } = useCurrency()
   const matchRoute = useMatchRoute()
 
   function handleTheme(t: Theme) {
@@ -111,6 +117,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupLabel>Currency</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2">
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.code} — {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
@@ -147,27 +172,6 @@ export function AppSidebar() {
                       >
                         <t.icon className="size-4" />
                         {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Currency</DropdownMenuLabel>
-                  <div className="flex flex-wrap gap-1 px-1.5 pb-1">
-                    {currencies.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        onClick={() => setCurrency(c.code)}
-                        className={cn(
-                          "rounded-md px-2.5 py-1 text-xs transition-colors",
-                          currency === c.code
-                            ? "bg-accent text-accent-foreground font-medium"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                        )}
-                      >
-                        {c.label}
                       </button>
                     ))}
                   </div>

@@ -23,6 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox"
 
 interface SubscriptionDialogProps {
   open: boolean
@@ -42,6 +50,9 @@ export function SubscriptionDialog({
   const queryClient = useQueryClient()
   const [error, setError] = useState("")
   const isEdit = !!subscription
+
+  const providerItems = providers.map((p) => ({ label: p.name, value: p.id, logo: p.logo }))
+  const currencyItems = currencies.map((c) => ({ label: `${c.code} - ${c.name}`, value: c.id }))
 
   const form = useForm({
     defaultValues: {
@@ -144,31 +155,55 @@ export function SubscriptionDialog({
                 !value ? "Provider is required" : undefined,
             }}
           >
-            {(field) => (
+            {(field) => {
+              const selectedProvider = providerItems.find((p) => p.value === field.state.value)
+              return (
               <Field>
                 <FieldLabel>Provider</FieldLabel>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(val) => field.handleChange(val as string)}
+                <Combobox
+                  items={providerItems}
+                  value={selectedProvider ?? null}
+                  onValueChange={(val: any) => field.handleChange(val?.value ?? "")}
+                  itemToStringValue={(item: any) => item?.label ?? ""}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a provider">
-                      {providers.find((p) => p.id === field.state.value)?.name}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {providers.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <div className="flex w-full items-center gap-2">
+                    {selectedProvider && (
+                      selectedProvider.logo ? (
+                        <img src={selectedProvider.logo} alt={selectedProvider.label} className="size-8 shrink-0 rounded object-contain" />
+                      ) : (
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded bg-purple-100 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                          {selectedProvider.label.charAt(0).toUpperCase()}
+                        </div>
+                      )
+                    )}
+                    <ComboboxInput className="flex-1" placeholder="Search providers..." />
+                  </div>
+                  <ComboboxContent>
+                    <ComboboxEmpty>No providers found</ComboboxEmpty>
+                    <ComboboxList>
+                      {(item: any) => (
+                        <ComboboxItem key={item.value} value={item}>
+                          <div className="flex items-center gap-2">
+                            {item.logo ? (
+                              <img src={item.logo} alt={item.label} className="size-6 rounded object-contain" />
+                            ) : (
+                              <div className="flex size-6 items-center justify-center rounded bg-purple-100 text-[10px] font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                                {item.label.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            {item.label}
+                          </div>
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
                 {field.state.meta.errors.length > 0 && (
                   <FieldError>{field.state.meta.errors[0]}</FieldError>
                 )}
               </Field>
-            )}
+              )
+            }}
           </form.Field>
 
           <div className="grid grid-cols-2 gap-4">
@@ -182,24 +217,24 @@ export function SubscriptionDialog({
               {(field) => (
                 <Field>
                   <FieldLabel>Currency</FieldLabel>
-                  <Select
-                    value={field.state.value}
-                    onValueChange={(val) => field.handleChange(val as string)}
+                  <Combobox
+                    items={currencyItems}
+                    value={currencyItems.find((c) => c.value === field.state.value) ?? null}
+                    onValueChange={(val: any) => field.handleChange(val?.value ?? "")}
+                    itemToStringValue={(item: any) => item?.label ?? ""}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select currency">
-                        {currencies.find((c) => c.id === field.state.value)
-                          ?.code}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.code} - {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <ComboboxInput placeholder="Search..." />
+                    <ComboboxContent>
+                      <ComboboxEmpty>No currencies found</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: any) => (
+                          <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                   {field.state.meta.errors.length > 0 && (
                     <FieldError>{field.state.meta.errors[0]}</FieldError>
                   )}

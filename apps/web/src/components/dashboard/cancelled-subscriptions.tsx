@@ -1,6 +1,5 @@
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import type { Subscription } from "@/lib/api"
 
@@ -12,21 +11,18 @@ function formatTimeLeft(endsAt: string): string {
   if (diffMs <= 0) return "Expired"
 
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
 
   if (days > 30) {
     const months = Math.floor(days / 30)
     const remainingDays = days % 30
     return remainingDays > 0
-      ? `${months}mo ${remainingDays}d left`
-      : `${months}mo left`
+      ? `${months} months ${remainingDays} days left`
+      : `${months} months left`
   }
 
-  if (days > 0) {
-    return hours > 0 ? `${days}d ${hours}h left` : `${days}d left`
-  }
+  if (days > 0) return `${days} days left`
 
-  return `${hours}h left`
+  return "Less than a day left"
 }
 
 export function CancelledSubscriptions({ subscriptions }: { subscriptions: Subscription[] }) {
@@ -51,9 +47,13 @@ export function CancelledSubscriptions({ subscriptions }: { subscriptions: Subsc
             const isExpired = timeLeft === "Expired"
             return (
               <div key={sub.id} className="flex items-center gap-3">
-                <Avatar size="sm">
-                  <AvatarFallback>{sub.provider.name[0]}</AvatarFallback>
-                </Avatar>
+                {sub.provider.logo ? (
+                  <img src={sub.provider.logo} alt={sub.provider.name} className="size-8 rounded object-contain" />
+                ) : (
+                  <div className="flex size-8 items-center justify-center rounded bg-purple-100 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                    {sub.provider.name[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{sub.name}</p>
                   <p className="text-xs text-muted-foreground">

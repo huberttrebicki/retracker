@@ -1,39 +1,63 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
+import { queryOptions, useQuery, useSuspenseQuery, keepPreviousData } from "@tanstack/react-query"
+import { client } from "@/lib/api"
 
-const currencies = [
-  { code: "USD", symbol: "$", label: "USD" },
-  { code: "EUR", symbol: "\u20ac", label: "EUR" },
-  { code: "GBP", symbol: "\u00a3", label: "GBP" },
-  { code: "PLN", symbol: "z\u0142", label: "PLN" },
-  { code: "JPY", symbol: "\u00a5", label: "JPY" },
-  { code: "CAD", symbol: "C$", label: "CAD" },
-] as const
+const currenciesQuery = queryOptions({
+  queryKey: ["currencies"],
+  queryFn: async () => {
+    const res = await client.api.currencies.$get()
+    return await res.json()
+  },
+})
 
-export type CurrencyCode = (typeof currencies)[number]["code"]
-
-export { currencies }
+const ratesQuery = (base: string) =>
+  queryOptions({
+    queryKey: ["exchange-rates", base],
+    queryFn: async () => {
+      const res = await client.api.currencies.rates.$get({ query: { base } })
+      return (await res.json()) as Record<string, number>
+    },
+    staleTime: 3 * 60 * 60 * 1000,
+  })
 
 const CurrencyContext = createContext<{
-  currency: CurrencyCode
-  setCurrency: (code: CurrencyCode) => void
-}>({ currency: "USD", setCurrency: () => {} })
+  currency: string
+  setCurrency: (code: string) => void
+  currencies: { id: string; name: string; code: string }[]
+  rates: Record<string, number>
+  convert: (amount: number, from: string) => number
+}>({
+  currency: "USD",
+  setCurrency: () => {},
+  currencies: [],
+  rates: {},
+  convert: (amount) => amount,
+})
 
-function getSavedCurrency(): CurrencyCode {
-  const saved = localStorage.getItem("currency")
-  if (saved && currencies.some((c) => c.code === saved)) return saved as CurrencyCode
-  return "USD"
+function getSavedCurrency(): string {
+  return localStorage.getItem("currency") ?? "USD"
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<CurrencyCode>(getSavedCurrency)
+  const [currency, setCurrencyState] = useState(getSavedCurrency)
+  const { data: currencyList } = useSuspenseQuery(currenciesQuery)
+  const { data: rates = {} } = useQuery({ ...ratesQuery(currency), placeholderData: keepPreviousData })
 
-  function setCurrency(code: CurrencyCode) {
+  function setCurrency(code: string) {
     setCurrencyState(code)
     localStorage.setItem("currency", code)
   }
 
+  function convert(amount: number, from: string): number {
+    if (from === currency) return amount
+    const fromRate = rates[from]
+    const toRate = rates[currency]
+    if (!fromRate || !toRate) return amount
+    return (amount / fromRate) * toRate
+  }
+
   return (
-    <CurrencyContext value={{ currency, setCurrency }}>
+    <CurrencyContext value={{ currency, setCurrency, currencies: currencyList, rates, convert }}>
       {children}
     </CurrencyContext>
   )

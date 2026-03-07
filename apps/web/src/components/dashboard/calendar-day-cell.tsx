@@ -2,24 +2,7 @@ import type { Subscription } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/calendar"
 import { useCurrency } from "@/lib/currency-context"
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
-
-const avatarColors = [
-  "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400",
-  "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
-  "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
-  "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-400",
-  "bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-400",
-  "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400",
-]
-
-function getProviderColor(name: string) {
-  let hash = 0
-  for (const ch of name) hash = (hash + ch.charCodeAt(0)) % avatarColors.length
-  return avatarColors[hash]
-}
+import { AvatarGroup } from "@/components/ui/avatar"
 
 export function CalendarDayCell({
   date,
@@ -34,8 +17,8 @@ export function CalendarDayCell({
   isToday: boolean
   onClick: () => void
 }) {
-  const { currency } = useCurrency()
-  const total = subscriptions.reduce((sum, s) => sum + s.price, 0)
+  const { currency, convert } = useCurrency()
+  const total = subscriptions.reduce((sum, s) => sum + convert(Number(s.price), s.currency), 0)
   const visible = subscriptions.slice(0, 3)
   const overflow = subscriptions.length - 3
 
@@ -67,18 +50,18 @@ export function CalendarDayCell({
         <>
           <AvatarGroup className="mt-auto">
             {visible.map((sub) => (
-              <Avatar key={sub.id} size="sm">
-                <AvatarFallback className={getProviderColor(sub.provider.name)}>
-                  {sub.provider.name[0]}
-                </AvatarFallback>
-              </Avatar>
+              sub.provider.logo ? (
+                <img key={sub.id} src={sub.provider.logo} alt={sub.provider.name} className="size-6 rounded-full border-2 border-background object-contain" />
+              ) : (
+                <div key={sub.id} className="flex size-6 items-center justify-center rounded-full border-2 border-background bg-purple-100 text-[10px] font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                  {sub.provider.name[0].toUpperCase()}
+                </div>
+              )
             ))}
             {overflow > 0 && (
-              <Avatar size="sm">
-                <AvatarFallback className="text-[10px]">
-                  +{overflow}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex size-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium text-muted-foreground">
+                +{overflow}
+              </div>
             )}
           </AvatarGroup>
           <span className="text-xs font-medium text-muted-foreground">

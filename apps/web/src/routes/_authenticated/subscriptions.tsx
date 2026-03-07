@@ -9,14 +9,35 @@ import {
   ChevronDownIcon,
   CalendarIcon,
   GlobeIcon,
+  CirclePlayIcon,
+  CirclePauseIcon,
+  CircleXIcon,
 } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
 import { client } from "@/lib/api"
 import type { Subscription } from "@/lib/api"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { formatCurrency } from "@/lib/calendar"
+import { useCurrency } from "@/lib/currency-context"
 import { SubscriptionDialog } from "@/components/subscriptions/subscription-dialog"
 import { DeleteSubscriptionDialog } from "@/components/subscriptions/delete-subscription-dialog"
 
@@ -105,9 +126,11 @@ function formatDate(date: Date) {
 }
 
 function SubscriptionsPage() {
+  const queryClient = useQueryClient()
   const { data: subscriptions } = useSuspenseQuery(subscriptionsQuery)
   const { data: providers } = useSuspenseQuery(allProvidersQuery)
   const { data: currencies } = useSuspenseQuery(currenciesQuery)
+  const { currency, convert } = useCurrency()
 
   const [activeStatus, setActiveStatus] = useState<Status>("active")
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -117,8 +140,39 @@ function SubscriptionsPage() {
     useState<Subscription | null>(null)
   const [deletingSubscription, setDeletingSubscription] =
     useState<Subscription | null>(null)
+  const [cancellingSubscription, setCancellingSubscription] =
+    useState<Subscription | null>(null)
+  const [cancelEndDate, setCancelEndDate] = useState("")
 
   const filtered = subscriptions.filter((s) => s.status === activeStatus)
+
+  async function handleStatusChange(sub: Subscription, newStatus: Status) {
+    if (sub.status === newStatus) return
+    if (newStatus === "cancelled") {
+      const calculatedEnd = getNextPayment(sub.startedAt, sub.intervalCount, sub.interval)
+      setCancelEndDate(calculatedEnd.toISOString().split("T")[0])
+      setCancellingSubscription(sub)
+      return
+    }
+    await client.api.subscriptions[":id"].$patch({
+      param: { id: sub.id },
+      json: { status: newStatus, endsAt: null },
+    })
+    queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+  }
+
+  async function confirmCancellation(endsAt: string | null) {
+    if (!cancellingSubscription) return
+    await client.api.subscriptions[":id"].$patch({
+      param: { id: cancellingSubscription.id },
+      json: {
+        status: "cancelled" as const,
+        endsAt: endsAt ? new Date(endsAt).toISOString() : null,
+      },
+    })
+    setCancellingSubscription(null)
+    queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+  }
 
   function handleCreate() {
     setEditingSubscription(null)
@@ -182,18 +236,31 @@ function SubscriptionsPage() {
                           setExpandedId(isExpanded ? null : sub.id)
                         }
                       >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              {sub.name}
+                        <div className="flex items-center gap-3">
+                          {sub.provider.logo ? (
+                            <img
+                              src={sub.provider.logo}
+                              alt={sub.provider.name}
+                              className="size-8 rounded object-contain"
+                            />
+                          ) : (
+                            <div className="flex size-8 items-center justify-center rounded bg-purple-100 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                              {sub.provider.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                {sub.name}
+                              </span>
+                              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                                {sub.provider.category}
+                              </Badge>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {sub.provider.name}
                             </span>
-                            <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
-                              {sub.provider.category}
-                            </Badge>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {sub.provider.name}
-                          </span>
                         </div>
                         <div className="flex items-center gap-3">
                           {sub.status === "active" && (
@@ -202,7 +269,7 @@ function SubscriptionsPage() {
                             </span>
                           )}
                           <span className="text-sm font-medium">
-                            {sub.currency} {sub.price}
+                            {formatCurrency(convert(Number(sub.price), sub.currency), currency)}
                             <span className="text-muted-foreground font-normal">
                               {formatInterval(sub.intervalCount, sub.interval)}
                             </span>
@@ -283,14 +350,46 @@ function SubscriptionsPage() {
                                 <span className="text-xs text-muted-foreground">
                                   Website
                                 </span>
-                                <p className="flex items-center gap-1">
+                                <a href={sub.provider.website.includes("://") ? sub.provider.website : `https://${sub.provider.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline">
                                   <GlobeIcon className="size-3 text-muted-foreground" />
                                   {sub.provider.website}
-                                </p>
+                                </a>
                               </div>
                             )}
                           </div>
                           <div className="mt-3 flex justify-end gap-1">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-purple-700 hover:bg-purple-100 hover:text-purple-700 dark:text-purple-400 dark:hover:bg-purple-950 dark:hover:text-purple-400"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                }
+                              >
+                                {sub.status === "active" && <CirclePlayIcon />}
+                                {sub.status === "paused" && <CirclePauseIcon />}
+                                {sub.status === "cancelled" && <CircleXIcon />}
+                                {statuses.find((s) => s.value === sub.status)?.label}
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {statuses
+                                  .filter((s) => s.value !== sub.status)
+                                  .map((s) => (
+                                    <DropdownMenuItem
+                                      key={s.value}
+                                      onClick={() => handleStatusChange(sub, s.value)}
+                                    >
+                                      {s.value === "active" && <CirclePlayIcon className="size-4" />}
+                                      {s.value === "paused" && <CirclePauseIcon className="size-4" />}
+                                      {s.value === "cancelled" && <CircleXIcon className="size-4" />}
+                                      {s.label}
+                                    </DropdownMenuItem>
+                                  ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                             <Button
                               variant="ghost"
                               size="icon-sm"
@@ -340,6 +439,38 @@ function SubscriptionsPage() {
         }}
         subscription={deletingSubscription}
       />
+
+      <Dialog
+        open={!!cancellingSubscription}
+        onOpenChange={(open) => {
+          if (!open) setCancellingSubscription(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel subscription</DialogTitle>
+            <DialogDescription>
+              Your subscription to "{cancellingSubscription?.name}" will expire on:
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="date"
+            value={cancelEndDate}
+            onChange={(e) => setCancelEndDate(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => confirmCancellation(null)}
+            >
+              Cancel without end date
+            </Button>
+            <Button onClick={() => confirmCancellation(cancelEndDate)}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

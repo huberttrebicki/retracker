@@ -6,6 +6,7 @@ import { AppEnv } from "../lib/auth";
 import { requireAuth } from "../middleware/auth";
 import { currencies, providerCategories, providers, subscriptions } from "../database/schema";
 import { eq, sql } from "drizzle-orm";
+import { getProviderLogo } from "../lib/logo";
 
 
 const subscriptionSchema = z.object({
@@ -17,7 +18,9 @@ const subscriptionSchema = z.object({
   intervalCount: z.number().positive(),
   interval: z.enum(["day", "week", "month", "year"]),
   price: z.number().positive(),
-  metadata: z.json().default({})
+  metadata: z.json().default({}),
+  status: z.enum(["active", "paused", "cancelled"]),
+  endsAt: z.coerce.date().nullable(),
 })
 
 const subscriptionsApp = new Hono<AppEnv>()
@@ -29,7 +32,7 @@ const subscriptionsApp = new Hono<AppEnv>()
         id: subscriptions.id,
         name: subscriptions.name,
         description: subscriptions.description,
-        provider: sql`json_build_object('id', ${providers.id}, 'name', ${providers.name}, 'website', ${providers.website}, 'category', ${providerCategories.name})`,
+        provider: sql`json_build_object('id', ${providers.id}, 'name', ${providers.name}, 'website', ${providers.website}, 'userId', ${providers.userId}, 'category', ${providerCategories.name})`,
         currency: currencies.code,
         startedAt: subscriptions.startedAt,
         intervalCount: subscriptions.intervalCount,
@@ -43,7 +46,16 @@ const subscriptionsApp = new Hono<AppEnv>()
       .innerJoin(providerCategories, eq(providers.providerCategoryId, providerCategories.id))
       .innerJoin(currencies, eq(subscriptions.currencyId, currencies.id))
       .where(eq(subscriptions.userId, user.id));
-    return c.json(subs);
+    return c.json(subs.map((s: any) => {
+      const { userId, ...provider } = s.provider;
+      return {
+        ...s,
+        provider: {
+          ...provider,
+          logo: !userId && provider.website ? getProviderLogo(provider.website) : null,
+        },
+      };
+    }));
   })
   .get("/:id", zValidator("param", z.object({ id: z.uuidv7() })), async (c) => {
     const { id } = c.req.valid("param");
@@ -54,7 +66,7 @@ const subscriptionsApp = new Hono<AppEnv>()
       description: subscriptions.description,
       metadata: subscriptions.metadata,
       userId: subscriptions.userId,
-      provider: sql`json_build_object('id', ${providers.id}, 'name', ${providers.name}, 'website', ${providers.website}, 'mail', ${providers.mail}, 'phone', ${providers.phone}, 'category', ${providerCategories.name})`,
+      provider: sql`json_build_object('id', ${providers.id}, 'name', ${providers.name}, 'website', ${providers.website}, 'mail', ${providers.mail}, 'phone', ${providers.phone}, 'userId', ${providers.userId}, 'category', ${providerCategories.name})`,
       currency: currencies.code,
       startedAt: subscriptions.startedAt,
       intervalCount: subscriptions.intervalCount,
@@ -77,7 +89,14 @@ const subscriptionsApp = new Hono<AppEnv>()
       return c.json("Content does not belong to the user", 403);
     }
 
-    return c.json(sub);
+    const { userId: providerUserId, ...provider } = (sub as any).provider;
+    return c.json({
+      ...sub,
+      provider: {
+        ...provider,
+        logo: !providerUserId && provider.website ? getProviderLogo(provider.website) : null,
+      },
+    });
   })
   .post("/", zValidator("json", subscriptionSchema), async (c) => {
     const body = c.req.valid("json");

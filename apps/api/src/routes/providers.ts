@@ -7,6 +7,7 @@ import { eq, isNull, or } from "drizzle-orm";
 
 import type { AppEnv } from "../lib/auth";
 import { requireAuth } from "../middleware/auth";
+import { getProviderLogo } from "../lib/logo";
 
 const providerSchema = z.object({
   name: z.string().nonempty(),
@@ -23,6 +24,7 @@ const providersApp = new Hono<AppEnv>()
     const providersQuery = await db
       .select({
         id: providers.id,
+        userId: providers.userId,
         category: providerCategories.name,
         name: providers.name,
         website: providers.website,
@@ -35,7 +37,10 @@ const providersApp = new Hono<AppEnv>()
         eq(providerCategories.id, providers.providerCategoryId),
       )
       .where(or(isNull(providers.userId), eq(providers.userId, user.id)));
-    return c.json(providersQuery);
+    return c.json(providersQuery.map(({ userId, ...p }) => ({
+      ...p,
+      logo: !userId && p.website ? getProviderLogo(p.website) : null,
+    })));
   })
   .get("/user-providers", async (c) => {
     const user = c.get("user")!;
@@ -55,7 +60,10 @@ const providersApp = new Hono<AppEnv>()
         eq(providerCategories.id, providers.providerCategoryId),
       )
       .where(eq(providers.userId, user.id));
-    return c.json(providersQuery);
+    return c.json(providersQuery.map((p) => ({
+      ...p,
+      logo: null,
+    })));
   })
   .get("/categories", async (c) => {
     const categories = await db

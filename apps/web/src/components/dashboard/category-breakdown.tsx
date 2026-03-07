@@ -5,7 +5,7 @@ import { useCurrency } from "@/lib/currency-context"
 import type { Subscription } from "@/lib/api"
 
 export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscription[] }) {
-  const { currency } = useCurrency()
+  const { currency, convert } = useCurrency()
 
   const categories = useMemo(() => {
     const active = subscriptions.filter((s) => s.status === "active")
@@ -15,7 +15,7 @@ export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscripti
         (acc, sub) => {
           const cat = sub.provider.category
           if (!acc[cat]) acc[cat] = { total: 0, count: 0 }
-          acc[cat].total += sub.price
+          acc[cat].total += convert(Number(sub.price), sub.currency)
           acc[cat].count += 1
           return acc
         },
@@ -24,7 +24,7 @@ export function CategoryBreakdown({ subscriptions }: { subscriptions: Subscripti
     ).sort((a, b) => b[1].total - a[1].total)
 
     return entries
-  }, [subscriptions])
+  }, [subscriptions, convert])
 
   const maxTotal = categories[0]?.[1].total ?? 0
 

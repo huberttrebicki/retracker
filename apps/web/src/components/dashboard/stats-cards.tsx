@@ -5,21 +5,22 @@ import { useCurrency } from "@/lib/currency-context"
 import type { Subscription } from "@/lib/api"
 
 export function StatsCards({ subscriptions }: { subscriptions: Subscription[] }) {
-  const { currency } = useCurrency()
+  const { currency, convert } = useCurrency()
 
   const stats = useMemo(() => {
     const active = subscriptions.filter((s) => s.status === "active")
 
     const monthlyEstimate = active.reduce((sum, s) => {
+      const price = convert(Number(s.price), s.currency)
       switch (s.interval) {
         case "month":
-          return sum + s.price / s.intervalCount
+          return sum + price / s.intervalCount
         case "week":
-          return sum + (s.price / (s.intervalCount * 7)) * 30
+          return sum + (price / (s.intervalCount * 7)) * 30
         case "day":
-          return sum + (s.price / s.intervalCount) * 30
+          return sum + (price / s.intervalCount) * 30
         case "year":
-          return sum + s.price / (s.intervalCount * 12)
+          return sum + price / (s.intervalCount * 12)
         default:
           return sum
       }
@@ -42,7 +43,7 @@ export function StatsCards({ subscriptions }: { subscriptions: Subscription[] })
       for (const sub of active) {
         if (isPaymentOnDate(sub, date) && !seen.has(`${sub.id}-${d}`)) {
           seen.add(`${sub.id}-${d}`)
-          remainingTotal += sub.price
+          remainingTotal += convert(Number(sub.price), sub.currency)
           remainingCount++
         }
       }
@@ -72,7 +73,7 @@ export function StatsCards({ subscriptions }: { subscriptions: Subscription[] })
         footer: `~${formatCurrency(monthlyEstimate, currency)}/month`,
       },
     ]
-  }, [subscriptions, currency])
+  }, [subscriptions, currency, convert])
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

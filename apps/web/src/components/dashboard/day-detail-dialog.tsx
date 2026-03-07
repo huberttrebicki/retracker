@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
@@ -36,8 +35,8 @@ export function DayDetailDialog({
   date: Date | null
   subscriptions: Subscription[]
 }) {
-  const { currency } = useCurrency()
-  const total = subscriptions.reduce((sum, s) => sum + s.price, 0)
+  const { currency, convert } = useCurrency()
+  const total = subscriptions.reduce((sum, s) => sum + convert(Number(s.price), s.currency), 0)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -56,9 +55,13 @@ export function DayDetailDialog({
             <div key={sub.id}>
               {i > 0 && <Separator />}
               <div className="flex items-center gap-3 py-3">
-                <Avatar>
-                  <AvatarFallback>{sub.provider.name[0]}</AvatarFallback>
-                </Avatar>
+                {sub.provider.logo ? (
+                  <img src={sub.provider.logo} alt={sub.provider.name} className="size-10 rounded object-contain" />
+                ) : (
+                  <div className="flex size-10 items-center justify-center rounded bg-purple-100 text-sm font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                    {sub.provider.name[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{sub.name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -67,7 +70,7 @@ export function DayDetailDialog({
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-sm font-medium">
-                    {formatCurrency(sub.price, currency)}
+                    {formatCurrency(convert(Number(sub.price), sub.currency), currency)}
                   </span>
                   <Badge variant={statusVariant[sub.status as keyof typeof statusVariant] ?? "default"}>{sub.status}</Badge>
                 </div>

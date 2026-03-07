@@ -87,7 +87,11 @@ function ProvidersPage() {
             {providers.map((provider) => (
               <Card key={provider.id}>
                 <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded bg-purple-100 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+                      {provider.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">
                         {provider.name}
@@ -96,10 +100,10 @@ function ProvidersPage() {
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       {provider.website && (
-                        <span className="flex items-center gap-1">
+                        <a href={provider.website.includes("://") ? provider.website : `https://${provider.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline">
                           <GlobeIcon className="size-3" />
                           {provider.website}
-                        </span>
+                        </a>
                       )}
                       {provider.mail && (
                         <span className="flex items-center gap-1">
@@ -114,6 +118,7 @@ function ProvidersPage() {
                         </span>
                       )}
                     </div>
+                  </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
