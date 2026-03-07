@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useForm } from "@tanstack/react-form"
+import z from "zod"
 import { ReceiptIcon, LoaderIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
@@ -14,34 +15,60 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 
-export const Route = createFileRoute("/login")({
-  component: LoginPage,
+export const Route = createFileRoute("/reset-password")({
+  validateSearch: z.object({
+    token: z.string().optional(),
+  }),
+  component: ResetPasswordPage,
 })
 
-function LoginPage() {
+function ResetPasswordPage() {
   const navigate = useNavigate()
+  const { token } = Route.useSearch()
   const [error, setError] = useState("")
 
   const form = useForm({
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
     onSubmit: async ({ value }) => {
       setError("")
-      const { error } = await authClient.signIn.email({
-        email: value.email,
-        password: value.password,
-      })
-
-      if (error) {
-        setError(error.message ?? "Failed to sign in")
+      if (value.password !== value.confirmPassword) {
+        setError("Passwords do not match")
         return
       }
-
-      navigate({ to: "/dashboard" })
+      const { error } = await authClient.resetPassword({
+        newPassword: value.password,
+        token: token ?? "",
+      })
+      if (error) {
+        setError(error.message ?? "Failed to reset password")
+        return
+      }
+      navigate({ to: "/login" })
     },
   })
+
+  if (!token) {
+    return (
+      <div className="flex min-h-svh items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Invalid link</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+              Request a new reset link
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-svh items-center justify-center p-4">
@@ -50,8 +77,8 @@ function LoginPage() {
           <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <ReceiptIcon className="size-5" />
           </div>
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle className="text-xl">Reset password</CardTitle>
+          <CardDescription>Enter your new password</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -62,18 +89,19 @@ function LoginPage() {
             className="flex flex-col gap-4"
           >
             <form.Field
-              name="email"
+              name="password"
               validators={{
                 onBlur: ({ value }) =>
-                  !value ? "Email is required" : undefined,
+                  value && value.length < 8
+                    ? "Password must be at least 8 characters"
+                    : undefined,
               }}
             >
               {(field) => (
                 <Field>
-                  <FieldLabel>Email</FieldLabel>
+                  <FieldLabel>New Password</FieldLabel>
                   <Input
-                    type="email"
-                    placeholder="john@example.com"
+                    type="password"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -86,15 +114,19 @@ function LoginPage() {
             </form.Field>
 
             <form.Field
-              name="password"
+              name="confirmPassword"
               validators={{
-                onBlur: ({ value }) =>
-                  !value ? "Password is required" : undefined,
+                onBlur: ({ value, fieldApi }) => {
+                  const newPw = fieldApi.form.getFieldValue("password")
+                  if (value && newPw && value !== newPw)
+                    return "Passwords do not match"
+                  return undefined
+                },
               }}
             >
               {(field) => (
                 <Field>
-                  <FieldLabel>Password</FieldLabel>
+                  <FieldLabel>Confirm Password</FieldLabel>
                   <Input
                     type="password"
                     value={field.state.value}
@@ -110,27 +142,14 @@ function LoginPage() {
 
             {error && <FieldError>{error}</FieldError>}
 
-            <div className="text-right">
-              <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
             <form.Subscribe selector={(s) => s.isSubmitting}>
               {(isSubmitting) => (
                 <Button type="submit" disabled={isSubmitting} className="w-full">
                   {isSubmitting && <LoaderIcon className="animate-spin" />}
-                  Sign in
+                  Reset password
                 </Button>
               )}
             </form.Subscribe>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
           </form>
         </CardContent>
       </Card>

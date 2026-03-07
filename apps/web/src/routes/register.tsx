@@ -41,6 +41,7 @@ function RegisterPage() {
         name: value.name,
         email: value.email,
         password: value.password,
+        callbackURL: `${import.meta.env.VITE_APP_URL}/dashboard`
       })
 
       if (error) {

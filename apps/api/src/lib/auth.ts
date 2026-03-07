@@ -2,6 +2,8 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../database/db";
 import * as schema from "../database/schema";
+import { eq } from "drizzle-orm";
+import { sendAccountVerificationEmail, sendResetPasswordEmail } from "./email";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -9,7 +11,16 @@ export const auth = betterAuth({
     schema,
   }),
   emailAndPassword: {
-      enabled: true,
+    enabled: true,
+    sendResetPassword: async ({ user, url, token }, request) => {
+      void sendResetPasswordEmail(user.email, url);
+    },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url, token }, request) => {
+      void sendAccountVerificationEmail(user.email, url);
+    },
+    sendOnSignUp: true,
   },
   trustedOrigins: ["http://localhost:5173"],
   advanced: {
@@ -17,6 +28,18 @@ export const auth = betterAuth({
       generateId: () => Bun.randomUUIDv7(),
     },
   },
+  user: {
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        const userId = user.id;
+        await db.transaction(async (tx) => {
+          await tx.delete(schema.subscriptions).where(eq(schema.subscriptions.userId, userId));
+          await tx.delete(schema.providers).where(eq(schema.providers.userId, userId));
+        })
+      }
+    }
+  }
 });
 
 export type AppEnv = {

@@ -3,7 +3,7 @@ import z from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "../database/db";
 import { AppEnv } from "../lib/auth";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireVerified } from "../middleware/auth";
 import { currencies, providerCategories, providers, subscriptions } from "../database/schema";
 import { eq, sql } from "drizzle-orm";
 import { getProviderLogo } from "../lib/logo";
@@ -98,7 +98,7 @@ const subscriptionsApp = new Hono<AppEnv>()
       },
     });
   })
-  .post("/", zValidator("json", subscriptionSchema), async (c) => {
+  .post("/", requireVerified, zValidator("json", subscriptionSchema), async (c) => {
     const body = c.req.valid("json");
     const user = c.get("user")!;
     const id = Bun.randomUUIDv7();

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useMatchRoute } from "@tanstack/react-router"
+import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router"
 import {
   CalendarIcon,
   CreditCardIcon,
@@ -10,6 +10,7 @@ import {
   MoonIcon,
   MonitorIcon,
   ChevronsUpDownIcon,
+  LogOutIcon,
 } from "lucide-react"
 import {
   Sidebar,
@@ -42,6 +43,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useCurrency } from "@/lib/currency-context"
+import { authClient } from "@/lib/auth-client"
 
 const navItems = [
   { title: "Dashboard", icon: CalendarIcon, url: "/dashboard" },
@@ -75,7 +77,9 @@ const themes = [
 export function AppSidebar() {
   const [theme, setTheme] = React.useState<Theme>(getTheme)
   const { currency, setCurrency, currencies } = useCurrency()
+  const { data: session } = authClient.useSession()
   const matchRoute = useMatchRoute()
+  const navigate = useNavigate()
 
   function handleTheme(t: Theme) {
     setTheme(t)
@@ -144,12 +148,19 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
                 <Avatar size="sm">
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>
+                    {session?.user?.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2) ?? "?"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-1 flex-col">
-                  <span className="text-sm font-medium">John Doe</span>
+                  <span className="text-sm font-medium">{session?.user?.name ?? "User"}</span>
                   <span className="text-xs text-muted-foreground">
-                    john@example.com
+                    {session?.user?.email}
                   </span>
                 </div>
                 <ChevronsUpDownIcon className="size-4 text-muted-foreground" />
@@ -178,9 +189,18 @@ export function AppSidebar() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem render={<Link to="/settings" />}>
                     <SettingsIcon />
                     Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await authClient.signOut()
+                      navigate({ to: "/login" })
+                    }}
+                  >
+                    <LogOutIcon />
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>

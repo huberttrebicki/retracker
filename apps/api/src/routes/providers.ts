@@ -6,7 +6,7 @@ import { providerCategories, providers } from "../database/schema";
 import { eq, isNull, or } from "drizzle-orm";
 
 import type { AppEnv } from "../lib/auth";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireVerified } from "../middleware/auth";
 import { getProviderLogo } from "../lib/logo";
 
 const providerSchema = z.object({
@@ -74,7 +74,7 @@ const providersApp = new Hono<AppEnv>()
       .from(providerCategories);
     return c.json(categories);
   })
-  .post("/", zValidator("json", providerSchema), async (c) => {
+  .post("/", requireVerified, zValidator("json", providerSchema), async (c) => {
     const user = c.get("user")!;
     const { name, providerCategoryId, website, mail, phone } =
       c.req.valid("json");
