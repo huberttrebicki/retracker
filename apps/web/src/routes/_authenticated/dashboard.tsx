@@ -43,16 +43,16 @@ function DashboardPage() {
 					}
 				>
 					<PlusIcon data-icon="inline-start" />
-					Add Subscription
+					<span className="hidden sm:inline">Add Subscription</span>
 				</Button>
 			</header>
 
-			<div className="flex-1 overflow-y-auto p-6">
-				<div className="flex flex-col gap-6">
+			<div className="flex-1 overflow-y-auto p-4 sm:p-6">
+				<div className="flex flex-col gap-4 sm:gap-6">
 					<StatsCards subscriptions={data} />
 					<TodayTomorrowPayments subscriptions={data} />
 					<CalendarGrid subscriptions={data} />
-					<div className="grid gap-6 lg:grid-cols-3">
+					<div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
 						<CategoryBreakdown subscriptions={data} />
 						<UpcomingPayments subscriptions={data} />
 						<CancelledSubscriptions subscriptions={data} />

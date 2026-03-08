@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { ReceiptIcon, LoaderIcon } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +21,12 @@ import {
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
 export const Route = createFileRoute("/register")({
+	beforeLoad: async () => {
+		const { data: session } = await authClient.getSession();
+		if (session) {
+			throw redirect({ to: "/dashboard" });
+		}
+	},
 	component: RegisterPage,
 });
 
@@ -58,9 +69,7 @@ function RegisterPage() {
 		<div className="flex min-h-svh items-center justify-center p-4">
 			<Card className="w-full max-w-sm">
 				<CardHeader className="text-center">
-					<div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-						<ReceiptIcon className="size-5" />
-					</div>
+					<img src="/logo.jpeg" alt="Retracker" className="mx-auto mb-2 size-10 rounded-lg" />
 					<CardTitle className="text-xl">Create an account</CardTitle>
 					<CardDescription>Get started with Retracker</CardDescription>
 				</CardHeader>

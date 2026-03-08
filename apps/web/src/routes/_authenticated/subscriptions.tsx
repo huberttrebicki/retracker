@@ -199,9 +199,9 @@ function SubscriptionsPage() {
 				<SidebarTrigger className="-ml-1" />
 			</header>
 
-			<div className="flex-1 overflow-y-auto p-6">
+			<div className="flex-1 overflow-y-auto p-4 sm:p-6">
 				<div className="mx-auto w-full max-w-7xl">
-					<div className="mb-6 flex items-center justify-between">
+					<div className="mb-4 sm:mb-6 flex items-center justify-between">
 						<div className="flex items-center gap-1 rounded-lg bg-muted p-1">
 							{statuses.map((s) => (
 								<button
@@ -221,7 +221,7 @@ function SubscriptionsPage() {
 						</div>
 						<Button size="sm" onClick={handleCreate}>
 							<PlusIcon />
-							Add Subscription
+							<span className="hidden sm:inline">Add Subscription</span>
 						</Button>
 					</div>
 
@@ -262,7 +262,7 @@ function SubscriptionsPage() {
 															<span className="text-sm font-medium">
 																{sub.name}
 															</span>
-															<Badge className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+															<Badge className="hidden sm:inline-flex bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
 																{sub.provider.category}
 															</Badge>
 														</div>
@@ -273,7 +273,7 @@ function SubscriptionsPage() {
 												</div>
 												<div className="flex items-center gap-3">
 													{sub.status === "active" && (
-														<span className="text-xs text-muted-foreground">
+														<span className="hidden sm:inline text-xs text-muted-foreground">
 															Next:{" "}
 															{formatDate(
 																getNextPayment(
@@ -309,7 +309,7 @@ function SubscriptionsPage() {
 															{sub.description}
 														</p>
 													)}
-													<div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+													<div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2 md:grid-cols-3">
 														<div>
 															<span className="text-xs text-muted-foreground">
 																Start Date

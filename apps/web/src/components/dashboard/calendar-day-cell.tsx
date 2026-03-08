@@ -31,7 +31,7 @@ export function CalendarDayCell({
 			onClick={onClick}
 			disabled={subscriptions.length === 0}
 			className={cn(
-				"flex flex-col gap-1.5 border-r border-b p-2 text-left transition-colors",
+				"flex flex-col gap-1 sm:gap-1.5 border-r border-b p-1 sm:p-2 text-left transition-colors",
 				isCurrentMonth
 					? "bg-card text-card-foreground"
 					: "bg-muted/30 text-muted-foreground/50",
@@ -58,24 +58,24 @@ export function CalendarDayCell({
 									key={sub.id}
 									src={sub.provider.logo}
 									alt={sub.provider.name}
-									className="size-6 rounded-full border-2 border-background object-contain"
+									className="size-5 sm:size-6 rounded-full border-2 border-background object-contain"
 								/>
 							) : (
 								<div
 									key={sub.id}
-									className="flex size-6 items-center justify-center rounded-full border-2 border-background bg-purple-100 text-[10px] font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400"
+									className="flex size-5 sm:size-6 items-center justify-center rounded-full border-2 border-background bg-purple-100 text-[10px] font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-400"
 								>
 									{sub.provider.name[0].toUpperCase()}
 								</div>
 							),
 						)}
 						{overflow > 0 && (
-							<div className="flex size-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium text-muted-foreground">
+							<div className="flex size-5 sm:size-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium text-muted-foreground">
 								+{overflow}
 							</div>
 						)}
 					</AvatarGroup>
-					<span className="text-xs font-medium text-muted-foreground">
+					<span className="hidden sm:block text-xs font-medium text-muted-foreground">
 						{formatCurrency(total, currency)}
 					</span>
 				</>

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ReceiptIcon } from "lucide-react";
+
 
 export const Route = createFileRoute("/terms")({
 	component: TermsPage,
@@ -10,9 +10,7 @@ function TermsPage() {
 		<div className="min-h-svh bg-black text-white">
 			<nav className="flex items-center justify-between px-8 py-6 sm:px-12 lg:px-20">
 				<Link to="/" className="flex items-center gap-3">
-					<div className="flex size-8 items-center justify-center bg-purple-600 text-white">
-						<ReceiptIcon className="size-4" />
-					</div>
+					<img src="/logo.jpeg" alt="Retracker" className="size-8" />
 					<span className="text-sm font-bold uppercase tracking-[0.2em] text-white/60">
 						Retracker
 					</span>

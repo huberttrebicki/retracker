@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { Subscription } from "@/lib/api";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
 	formatDateKey,
 	getCalendarDays,
@@ -20,7 +21,15 @@ import { Button } from "@/components/ui/button";
 import { CalendarDayCell } from "./calendar-day-cell";
 import { DayDetailDialog } from "./day-detail-dialog";
 
-const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekdays = [
+	{ short: "M", full: "Mon" },
+	{ short: "T", full: "Tue" },
+	{ short: "W", full: "Wed" },
+	{ short: "T", full: "Thu" },
+	{ short: "F", full: "Fri" },
+	{ short: "S", full: "Sat" },
+	{ short: "S", full: "Sun" },
+];
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", {
 	month: "long",
@@ -35,6 +44,7 @@ export function CalendarGrid({
 	const [currentDate, setCurrentDate] = React.useState(() => new Date());
 	const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
 	const { currency, convert } = useCurrency();
+	const isMobile = useIsMobile();
 
 	const year = currentDate.getFullYear();
 	const month = currentDate.getMonth();
@@ -102,19 +112,20 @@ export function CalendarGrid({
 
 			<CardContent className="px-0 pb-0">
 				<div className="grid grid-cols-7 border-t">
-					{weekdays.map((day) => (
+					{weekdays.map((day, i) => (
 						<div
-							key={day}
+							key={i}
 							className="border-b px-2 py-1.5 text-center text-xs font-medium text-muted-foreground"
 						>
-							{day}
+							<span className="sm:hidden">{day.short}</span>
+							<span className="hidden sm:inline">{day.full}</span>
 						</div>
 					))}
 				</div>
 
 				<div
 					className="grid grid-cols-7"
-					style={{ gridTemplateRows: `repeat(${rows}, minmax(6.5rem, auto))` }}
+					style={{ gridTemplateRows: `repeat(${rows}, minmax(${isMobile ? "4.5rem" : "6.5rem"}, auto))` }}
 				>
 					{calendarDays.map((date) => {
 						const key = formatDateKey(date);

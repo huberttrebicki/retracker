@@ -5,7 +5,7 @@ import {
 	CreditCardIcon,
 	BuildingIcon,
 	SettingsIcon,
-	ReceiptIcon,
+
 	SunIcon,
 	MoonIcon,
 	MonitorIcon,
@@ -94,9 +94,7 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg">
-							<div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-								<ReceiptIcon className="size-4" />
-							</div>
+							<img src="/logo.jpeg" alt="Retracker" className="size-8 rounded-lg" />
 							<span className="text-base font-semibold">Retracker</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

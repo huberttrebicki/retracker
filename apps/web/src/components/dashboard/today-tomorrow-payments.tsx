@@ -81,14 +81,15 @@ export function TodayTomorrowPayments({
 
 	return (
 		<Card className="border-t-2 border-t-purple-400 dark:border-t-purple-600">
-			<CardContent className="flex gap-6 p-5">
+			<CardContent className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-5">
 				<PaymentList
 					label="Today"
 					payments={todayPayments}
 					currency={currency}
 					convert={convert}
 				/>
-				<div className="w-px bg-border" />
+				<div className="border-t sm:hidden" />
+				<div className="hidden sm:block w-px bg-border" />
 				<PaymentList
 					label="Tomorrow"
 					payments={tomorrowPayments}

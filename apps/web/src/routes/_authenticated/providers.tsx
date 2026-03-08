@@ -70,7 +70,7 @@ function ProvidersPage() {
 				<SidebarTrigger className="-ml-1" />
 			</header>
 
-			<div className="flex-1 overflow-y-auto p-6">
+			<div className="flex-1 overflow-y-auto p-4 sm:p-6">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="mb-6 flex items-center justify-between">
 						<h1 className="text-sm font-medium">Providers</h1>
@@ -99,11 +99,11 @@ function ProvidersPage() {
 													<span className="text-sm font-medium">
 														{provider.name}
 													</span>
-													<Badge className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
+													<Badge className="hidden sm:inline-flex bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400">
 														{provider.category}
 													</Badge>
 												</div>
-												<div className="flex items-center gap-3 text-xs text-muted-foreground">
+												<div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
 													{provider.website && (
 														<a
 															href={

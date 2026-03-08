@@ -1,14 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
-	ReceiptIcon,
 	ArrowRightIcon,
 	CreditCardIcon,
 	CoinsIcon,
 	CalendarIcon,
 	CircleXIcon,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/")({
+	beforeLoad: async () => {
+		const { data: session } = await authClient.getSession();
+		if (session) {
+			throw redirect({ to: "/dashboard" });
+		}
+	},
 	component: LandingPage,
 });
 
@@ -71,18 +77,16 @@ function LandingPage() {
 			<div className="relative z-10 flex min-h-svh flex-col">
 				{/* Nav */}
 				<nav
-					className="flex items-center justify-between px-8 py-6 sm:px-12 lg:px-20"
+					className="flex items-center justify-between px-4 py-4 sm:px-12 sm:py-6 lg:px-20"
 					style={{ animation: "fadeSlideUp 0.6s ease-out both" }}
 				>
-					<div className="flex items-center gap-3">
-						<div className="flex size-8 items-center justify-center bg-purple-600 text-white">
-							<ReceiptIcon className="size-4" />
-						</div>
+					<div className="flex items-center gap-2 sm:gap-3">
+						<img src="/logo.jpeg" alt="Retracker" className="size-8" />
 						<span className="text-sm font-bold uppercase tracking-[0.2em] text-white/60">
 							Retracker
 						</span>
 					</div>
-					<div className="flex items-center gap-4">
+					<div className="flex items-center gap-2 sm:gap-4">
 						<Link
 							to="/login"
 							className="text-xs font-bold uppercase tracking-widest text-white/40 transition-colors hover:text-white"
@@ -91,7 +95,7 @@ function LandingPage() {
 						</Link>
 						<Link
 							to="/register"
-							className="bg-purple-600 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+							className="bg-purple-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
 						>
 							Get Started
 						</Link>
@@ -99,7 +103,7 @@ function LandingPage() {
 				</nav>
 
 				{/* Hero */}
-				<section className="relative flex flex-1 flex-col items-center justify-center px-8 text-center">
+				<section className="relative flex flex-1 flex-col items-center justify-center px-4 sm:px-8 text-center">
 
 					<p
 						className="mb-6 font-mono text-xs uppercase tracking-[0.3em] text-purple-500/70"
@@ -109,7 +113,7 @@ function LandingPage() {
 					</p>
 
 					<h1
-						className="max-w-5xl text-5xl font-bold uppercase leading-[0.9] tracking-[0.03em] sm:text-7xl lg:text-8xl xl:text-9xl"
+						className="max-w-5xl text-4xl font-bold uppercase leading-[0.9] tracking-[0.03em] sm:text-7xl lg:text-8xl xl:text-9xl"
 						style={{
 							animation: "fadeSlideUp 0.8s ease-out 0.2s both",
 							fontFamily: "'Figtree Variable', system-ui, sans-serif",
@@ -158,11 +162,11 @@ function LandingPage() {
 
 				{/* Features */}
 				<section className="mt-auto border-t border-white/5">
-					<div className="grid grid-cols-2 lg:grid-cols-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 						{features.map((feature, i) => (
 							<div
 								key={feature.label}
-								className="group relative border-r border-white/5 bg-black/40 p-8 transition-colors last:border-r-0 hover:bg-black/60 lg:p-10"
+								className="group relative border-b sm:border-b-0 sm:border-r border-white/5 bg-black/40 p-6 sm:p-8 transition-colors last:border-b-0 last:border-r-0 hover:bg-black/60 lg:p-10"
 								style={{
 									animation: `fadeSlideUp 0.6s ease-out ${0.3 + i * 0.12}s both`,
 								}}
@@ -188,7 +192,7 @@ function LandingPage() {
 
 				{/* Footer */}
 				<footer
-					className="border-t border-white/5 px-8 py-4 sm:px-12 lg:px-20"
+					className="border-t border-white/5 px-4 py-4 sm:px-12 lg:px-20"
 					style={{ animation: "fadeSlideUp 0.6s ease-out 0.8s both" }}
 				>
 					<div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
