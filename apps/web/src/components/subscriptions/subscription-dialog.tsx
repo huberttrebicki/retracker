@@ -31,6 +31,7 @@ import {
 	ComboboxItem,
 	ComboboxEmpty,
 } from "@/components/ui/combobox";
+import { CATEGORY_METADATA_FIELDS } from "@/lib/metadata-fields";
 
 interface SubscriptionDialogProps {
 	open: boolean;
@@ -75,6 +76,7 @@ export function SubscriptionDialog({
 			intervalCount: subscription?.intervalCount ?? 1,
 			interval: subscription?.interval ?? "month",
 			price: subscription?.price ? Number(subscription.price) : 0,
+			metadata: (subscription?.metadata ?? {}) as Record<string, string>,
 		},
 		onSubmit: async ({ value }) => {
 			setError("");
@@ -88,6 +90,7 @@ export function SubscriptionDialog({
 					intervalCount: value.intervalCount,
 					interval: value.interval as "day" | "week" | "month" | "year",
 					price: value.price,
+					metadata: value.metadata,
 				};
 
 				if (isEdit && subscription) {
@@ -97,10 +100,7 @@ export function SubscriptionDialog({
 					});
 				} else {
 					await client.api.subscriptions.$post({
-						json: {
-							...payload,
-							metadata: {},
-						},
+						json: payload,
 					});
 				}
 				queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
@@ -392,6 +392,56 @@ export function SubscriptionDialog({
 							</Field>
 						)}
 					</form.Field>
+
+					<form.Subscribe selector={(s) => s.values.providerId}>
+						{(providerId) => {
+							const provider = providers.find(
+								(p) => p.id === providerId,
+							);
+							const fields = provider?.category
+								? (CATEGORY_METADATA_FIELDS[provider.category] ?? [])
+								: [];
+							if (fields.length === 0) return null;
+							return (
+								<form.Field name="metadata">
+									{(field) => (
+										<div className="flex flex-col gap-4">
+											{fields.map((def) => (
+												<Field key={def.key}>
+													<FieldLabel>
+														{def.label}{" "}
+														<span className="font-normal text-muted-foreground">
+															(optional)
+														</span>
+													</FieldLabel>
+													<Input
+														value={
+															(
+																field.state.value as Record<
+																	string,
+																	string
+																>
+															)?.[def.key] ?? ""
+														}
+														onChange={(e) =>
+															field.handleChange({
+																...(field.state
+																	.value as Record<
+																	string,
+																	string
+																>),
+																[def.key]: e.target.value,
+															})
+														}
+													/>
+												</Field>
+											))}
+										</div>
+									)}
+								</form.Field>
+							);
+						}}
+					</form.Subscribe>
 
 					{error && <FieldError>{error}</FieldError>}
 

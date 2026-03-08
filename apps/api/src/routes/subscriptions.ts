@@ -23,8 +23,8 @@ const subscriptionSchema = z.object({
 	interval: z.enum(["day", "week", "month", "year"]),
 	price: z.number().positive(),
 	metadata: z.json().default({}),
-	status: z.enum(["active", "paused", "cancelled"]),
-	endsAt: z.coerce.date().nullable(),
+	status: z.enum(["active", "paused", "cancelled"]).default("active"),
+	endsAt: z.coerce.date().nullable().default(null),
 });
 
 const subscriptionsApp = new Hono<AppEnv>()
@@ -42,6 +42,7 @@ const subscriptionsApp = new Hono<AppEnv>()
 				intervalCount: subscriptions.intervalCount,
 				interval: subscriptions.interval,
 				price: subscriptions.price,
+				metadata: subscriptions.metadata,
 				endsAt: subscriptions.endsAt,
 				status: subscriptions.status,
 			})

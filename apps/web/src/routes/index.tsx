@@ -25,7 +25,7 @@ const features = [
 		label: "convert",
 		title: "Multi-Currency",
 		description:
-			"Real-time exchange rates across 150+ currencies. See your true spending in any currency.",
+			"Adjust currency to your needs and location based on a real-time rates.",
 	},
 	{
 		icon: CalendarIcon,
@@ -39,7 +39,7 @@ const features = [
 		label: "cancel",
 		title: "Cancellation Tracking",
 		description:
-			"Track cancelled subscriptions and their end dates. Never pay for something you've already cancelled.",
+			"Keep a record of what you've cancelled and when the access expires.",
 	},
 ];
 
@@ -109,7 +109,7 @@ function LandingPage() {
 					</p>
 
 					<h1
-						className="max-w-5xl text-5xl font-bold uppercase leading-[0.9] tracking-[-0.02em] sm:text-7xl lg:text-8xl xl:text-9xl"
+						className="max-w-5xl text-5xl font-bold uppercase leading-[0.9] tracking-[0.03em] sm:text-7xl lg:text-8xl xl:text-9xl"
 						style={{
 							animation: "fadeSlideUp 0.8s ease-out 0.2s both",
 							fontFamily: "'Figtree Variable', system-ui, sans-serif",

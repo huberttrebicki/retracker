@@ -1,3 +1,4 @@
+import { GlobeIcon } from "lucide-react";
 import type { Subscription } from "@/lib/api";
 import { formatCurrency } from "@/lib/calendar";
 import { useCurrency } from "@/lib/currency-context";
@@ -8,8 +9,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { CATEGORY_METADATA_FIELDS } from "@/lib/metadata-fields";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
 	weekday: "long",
@@ -17,12 +18,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 	day: "numeric",
 	year: "numeric",
 });
-
-const statusVariant = {
-	active: "default",
-	paused: "secondary",
-	cancelled: "destructive",
-} as const;
 
 export function DayDetailDialog({
 	open,
@@ -71,26 +66,65 @@ export function DayDetailDialog({
 								)}
 								<div className="flex-1 min-w-0">
 									<p className="text-sm font-medium truncate">{sub.name}</p>
-									<p className="text-xs text-muted-foreground">
-										{sub.provider.name}
-									</p>
-								</div>
-								<div className="flex flex-col items-end gap-1">
-									<span className="text-sm font-medium">
-										{formatCurrency(
-											convert(Number(sub.price), sub.currency),
-											currency,
+									<div className="flex items-center gap-2 text-xs text-muted-foreground">
+										<span>{sub.provider.name}</span>
+										{sub.provider.website && (
+											<a
+												href={
+													sub.provider.website.includes("://")
+														? sub.provider.website
+														: `https://${sub.provider.website}`
+												}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex items-center gap-0.5 hover:underline"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<GlobeIcon className="size-3" />
+												{sub.provider.website}
+											</a>
 										)}
-									</span>
-									<Badge
-										variant={
-											statusVariant[sub.status as keyof typeof statusVariant] ??
-											"default"
-										}
-									>
-										{sub.status}
-									</Badge>
+									</div>
+									{sub.metadata &&
+										(() => {
+											const fields = (
+												CATEGORY_METADATA_FIELDS[
+													sub.provider.category as string
+												] ?? []
+											).filter(
+												(def) =>
+													(sub.metadata as Record<string, string>)?.[
+														def.key
+													],
+											);
+											if (fields.length === 0) return null;
+											return (
+												<div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+													{fields.map((def) => (
+														<span key={def.key}>
+															{def.label}:{" "}
+															<span className="text-foreground">
+																{
+																	(
+																		sub.metadata as Record<
+																			string,
+																			string
+																		>
+																	)[def.key]
+																}
+															</span>
+														</span>
+													))}
+												</div>
+											);
+										})()}
 								</div>
+								<span className="text-sm font-medium shrink-0">
+									{formatCurrency(
+										convert(Number(sub.price), sub.currency),
+										currency,
+									)}
+								</span>
 							</div>
 						</div>
 					))}

@@ -40,6 +40,7 @@ import { formatCurrency } from "@/lib/calendar";
 import { useCurrency } from "@/lib/currency-context";
 import { SubscriptionDialog } from "@/components/subscriptions/subscription-dialog";
 import { DeleteSubscriptionDialog } from "@/components/subscriptions/delete-subscription-dialog";
+import { CATEGORY_METADATA_FIELDS } from "@/lib/metadata-fields";
 
 const subscriptionsQuery = queryOptions({
 	queryKey: ["subscriptions"],
@@ -389,6 +390,35 @@ function SubscriptionsPage() {
 																</a>
 															</div>
 														)}
+														{sub.metadata &&
+															(
+																CATEGORY_METADATA_FIELDS[
+																	sub.provider.category as string
+																] ?? []
+															)
+																.filter(
+																	(def) =>
+																		(sub.metadata as Record<string, string>)?.[
+																			def.key
+																		],
+																)
+																.map((def) => (
+																	<div key={def.key}>
+																		<span className="text-xs text-muted-foreground">
+																			{def.label}
+																		</span>
+																		<p>
+																			{
+																				(
+																					sub.metadata as Record<
+																						string,
+																						string
+																					>
+																				)[def.key]
+																			}
+																		</p>
+																	</div>
+																))}
 													</div>
 													<div className="mt-3 flex justify-end gap-1">
 														<DropdownMenu>
