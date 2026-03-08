@@ -6,45 +6,49 @@ import { eq } from "drizzle-orm";
 import { sendAccountVerificationEmail, sendResetPasswordEmail } from "./email";
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema,
-  }),
-  emailAndPassword: {
-    enabled: true,
-    sendResetPassword: async ({ user, url, token }, request) => {
-      void sendResetPasswordEmail(user.email, url);
-    },
-  },
-  emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
-      void sendAccountVerificationEmail(user.email, url);
-    },
-    sendOnSignUp: true,
-  },
-  trustedOrigins: ["http://localhost:5173"],
-  advanced: {
-    database: {
-      generateId: () => Bun.randomUUIDv7(),
-    },
-  },
-  user: {
-    deleteUser: {
-      enabled: true,
-      beforeDelete: async (user) => {
-        const userId = user.id;
-        await db.transaction(async (tx) => {
-          await tx.delete(schema.subscriptions).where(eq(schema.subscriptions.userId, userId));
-          await tx.delete(schema.providers).where(eq(schema.providers.userId, userId));
-        })
-      }
-    }
-  }
+	database: drizzleAdapter(db, {
+		provider: "pg",
+		schema,
+	}),
+	emailAndPassword: {
+		enabled: true,
+		sendResetPassword: async ({ user, url, token }, request) => {
+			void sendResetPasswordEmail(user.email, url);
+		},
+	},
+	emailVerification: {
+		sendVerificationEmail: async ({ user, url, token }, request) => {
+			void sendAccountVerificationEmail(user.email, url);
+		},
+		sendOnSignUp: true,
+	},
+	trustedOrigins: ["http://localhost:5173"],
+	advanced: {
+		database: {
+			generateId: () => Bun.randomUUIDv7(),
+		},
+	},
+	user: {
+		deleteUser: {
+			enabled: true,
+			beforeDelete: async (user) => {
+				const userId = user.id;
+				await db.transaction(async (tx) => {
+					await tx
+						.delete(schema.subscriptions)
+						.where(eq(schema.subscriptions.userId, userId));
+					await tx
+						.delete(schema.providers)
+						.where(eq(schema.providers.userId, userId));
+				});
+			},
+		},
+	},
 });
 
 export type AppEnv = {
-  Variables: {
-    user: typeof auth.$Infer.Session.user | null;
-    session: typeof auth.$Infer.Session.session | null;
-  };
+	Variables: {
+		user: typeof auth.$Infer.Session.user | null;
+		session: typeof auth.$Infer.Session.session | null;
+	};
 };

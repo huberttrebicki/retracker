@@ -1,15 +1,16 @@
 {
-  "name": "subscription-manager",
-  "module": "index.ts",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*"
-  ]
+	"name": "subscription-manager",
+	"module": "index.ts",
+	"devDependencies": {
+		"@biomejs/biome": "2.4.6",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"apps/*"
+	]
 }
