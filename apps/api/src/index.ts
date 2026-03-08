@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/bun";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import type { AppEnv } from "./lib/auth";
 import authApp from "./routes/auth";
 import providersApp from "./routes/providers";
@@ -14,6 +15,7 @@ Sentry.init({
 
 const app = new Hono<AppEnv>()
 	.basePath("/api")
+	.use("*", logger())
 	.use(
 		"*",
 		cors({

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { ReceiptIcon, LoaderIcon } from "lucide-react";
+import { FaGoogle, FaGithub } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -187,6 +188,48 @@ function RegisterPage() {
 								</Button>
 							)}
 						</form.Subscribe>
+
+						<div className="relative my-2">
+							<div className="absolute inset-0 flex items-center">
+								<span className="w-full border-t" />
+							</div>
+							<div className="relative flex justify-center text-xs uppercase">
+								<span className="bg-card px-2 text-muted-foreground">
+									or continue with
+								</span>
+							</div>
+						</div>
+
+						<div className="grid grid-cols-2 gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full"
+								onClick={() =>
+									authClient.signIn.social({
+										provider: "google",
+										callbackURL: `${import.meta.env.VITE_APP_URL}/dashboard`,
+									})
+								}
+							>
+								<FaGoogle />
+								Google
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full"
+								onClick={() =>
+									authClient.signIn.social({
+										provider: "github",
+										callbackURL: `${import.meta.env.VITE_APP_URL}/dashboard`,
+									})
+								}
+							>
+								<FaGithub />
+								GitHub
+							</Button>
+						</div>
 
 						<p className="text-center text-sm text-muted-foreground">
 							Already have an account?{" "}
