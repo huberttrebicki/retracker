@@ -37,4 +37,8 @@ const app = new Hono<AppEnv>()
 	});
 
 export type AppType = typeof app;
-export default app;
+export default {
+	fetch: app.fetch,
+	port: process.env.PORT ?? 3000,
+	hostname: "0.0.0.0",
+};
