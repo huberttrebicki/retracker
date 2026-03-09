@@ -13,12 +13,12 @@ export const auth = betterAuth({
 	}),
 	emailAndPassword: {
 		enabled: true,
-		sendResetPassword: async ({ user, url, token }, request) => {
+		sendResetPassword: async ({ user, url }) => {
 			void sendResetPasswordEmail(user.email, url);
 		},
 	},
 	emailVerification: {
-		sendVerificationEmail: async ({ user, url, token }, request) => {
+		sendVerificationEmail: async ({ user, url }) => {
 			void sendAccountVerificationEmail(user.email, url);
 		},
 		sendOnSignUp: true,

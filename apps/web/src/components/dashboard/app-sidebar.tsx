@@ -125,7 +125,7 @@ export function AppSidebar() {
 					<SidebarGroupLabel>Currency</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<div className="px-2">
-							<Select value={currency} onValueChange={setCurrency}>
+							<Select value={currency} onValueChange={(value) => { if (value) setCurrency(value); }}>
 								<SelectTrigger className="w-full">
 									<SelectValue />
 								</SelectTrigger>
