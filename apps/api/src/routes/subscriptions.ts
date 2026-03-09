@@ -100,8 +100,8 @@ const subscriptionsApp = new Hono<AppEnv>()
 			.limit(1);
 
 		if (!sub) {
-			return c.json(`Subscription with id: ${id} does not exist`);
-		}
+			return c.json(`Subscription with id: ${id} does not exist`, 404);
+	}
 
 		if (sub.userId !== user.id) {
 			return c.json("Content does not belong to the user", 403);
@@ -140,7 +140,7 @@ const subscriptionsApp = new Hono<AppEnv>()
 				interval: body.interval,
 				price: String(body.price),
 				metadata: body.metadata,
-				status: "active",
+				status: body.status,
 			});
 
 			return c.json({ id }, 201);
@@ -191,6 +191,9 @@ const subscriptionsApp = new Hono<AppEnv>()
 				.from(subscriptions)
 				.where(eq(subscriptions.id, id))
 				.limit(1);
+			if (!sub) {
+				return c.json(`Subscription with id: ${id} does not exist`, 404);
+			}
 			if (sub.userId !== user.id) {
 				return c.json("Content does not belong to the user", 403);
 			}

@@ -10,7 +10,7 @@ import currenciesApp from "./routes/currencies";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN!,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.2,
 });
 
 const app = new Hono<AppEnv>()
@@ -19,7 +19,7 @@ const app = new Hono<AppEnv>()
 	.use(
 		"*",
 		cors({
-			origin: "http://localhost:5173",
+			origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
 			allowHeaders: ["Content-Type", "Authorization"],
 			allowMethods: ["POST", "GET", "PATCH", "DELETE", "PUT", "OPTIONS"],
 			exposeHeaders: ["Content-Length"],
@@ -30,7 +30,11 @@ const app = new Hono<AppEnv>()
   .route("/", authApp)
 	.route("/providers", providersApp)
 	.route("/subscriptions", subscriptionsApp)
-	.route("/currencies", currenciesApp);
+	.route("/currencies", currenciesApp)
+	.onError((err, c) => {
+		Sentry.captureException(err);
+		return c.json({ error: "Internal server error" }, 500);
+	});
 
 export type AppType = typeof app;
 export default app;

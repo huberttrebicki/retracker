@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { sendAccountVerificationEmail, sendResetPasswordEmail } from "./email";
 
 export const auth = betterAuth({
+	secret: process.env.BETTER_AUTH_SECRET,
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema,
@@ -22,7 +23,7 @@ export const auth = betterAuth({
 		},
 		sendOnSignUp: true,
 	},
-	trustedOrigins: ["http://localhost:5173"],
+	trustedOrigins: [process.env.CORS_ORIGIN ?? "http://localhost:5173"],
 	advanced: {
 		database: {
 			generateId: () => Bun.randomUUIDv7(),
